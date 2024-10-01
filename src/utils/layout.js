@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 
 const Layout = ({ children }) => {
   const HeaderLinks = [
@@ -54,7 +55,7 @@ const Layout = ({ children }) => {
               <a
                 href={item.link}
                 key={index}
-                className="hover:text-white hover:scale-105 text font-medium flex flex-col justify-center items-center gap-2  bg-blue-400 h-full w-full rounded-lg transition-scale duration-300 delay-75 ease-in-out"
+                className="hover:text-white hover:scale-105 text font-medium flex flex-col justify-center items-center gap-2  bg-blue-400 h-full w-full rounded-lg transition-scale duration-300 delay-75 ease-in-out text-sm md:text-base"
               >
                 <i className={item.iconClass}></i>
                 {item.name}
@@ -62,7 +63,7 @@ const Layout = ({ children }) => {
             ))}
         </div>
       </div>
-      <nav className="py-6 px-10 lg:px-36 flex items-center justify-between">
+      <nav className="py-4 px-4 lg:px-36 flex items-center justify-between">
         <div className="flex  items-center gap-4">
           <img
             src="https://wallpapercave.com/fuwp/uwp4224146.jpeg"
@@ -84,13 +85,19 @@ const Layout = ({ children }) => {
             </a>
           ))}
         </div>
-        <div className="flex gap-6 hidden xl:flex">
-          <button className="text-sm text-blue-600 border p-3 w-[100px] rounded font-semibold border-blue-600 hover:opacity-90">
+        <div className="gap-6 hidden xl:flex">
+          <a
+            className="text-center cursor-pointer text-sm text-blue-600 border p-3 w-[100px] rounded font-semibold border-blue-600 hover:opacity-90"
+            href="#"
+          >
             Contact Us
-          </button>
-          <button className="text-sm text-white p-3 w-[100px] rounded font-semibold bg-blue-600 hover:opacity-90">
+          </a>
+          <a
+            className="text-sm text-center cursor-pointer text-white p-3 w-[100px] rounded font-semibold bg-blue-600 hover:opacity-90"
+            href="/login"
+          >
             Login
-          </button>
+          </a>
         </div>
 
         <i
