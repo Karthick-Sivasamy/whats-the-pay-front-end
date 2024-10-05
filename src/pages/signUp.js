@@ -7,38 +7,37 @@ import validator from 'validator';
 import { ToastContainer, toast } from 'react-toastify';
 import { clearCookiesForLogout } from '../utils/globalUtils';
 
-const Login = () => {
+const SignUp = () => {
   const cookies = new Cookies();
 
   const [showPass, setShowPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [name, setName] = useState('karthick');
+  const [email, setEmail] = useState('karthick@yopmail.com');
+  const [password, setPassword] = useState('test1234');
+  const [confirmPassword, setConfirmPassword] = useState('test1234');
 
   const [errors, setErrors] = useState({
+    name: false,
     email: false,
-    password: false
+    password: false,
+    confirmPassword: false
   });
 
   let loadingToast;
 
-  const loadedSuccessConfig = {
-    render: 'Successfully logged in!',
-    type: 'success',
-    isLoading: false,
-    autoClose: true,
-    closeButton: true
-  };
-
   const loginHandler = async () => {
-    if (!validator.isEmail(email.trim()) || !validator.isAlphanumeric(password.trim())) {
-      if (!email || !password) {
-        setErrors({ email: !Boolean(email.length), password: !Boolean(password.length) });
-        return;
-      }
-
-      setErrors({ password: true, email: true });
+    if (!email || !password || !name || !confirmPassword) {
+      setErrors({
+        email: !Boolean(email.length),
+        password: !Boolean(password.length),
+        confirmPassword: !Boolean(confirmPassword.length),
+        name: !Boolean(name.length)
+      });
+      return;
     }
+
     if (validator.isEmail(email) && validator.isAlphanumeric(password)) {
       try {
         loadingToast = toast.loading('Please Wait');
@@ -47,8 +46,16 @@ const Login = () => {
           password: password
         });
 
+        const loadedConfig = {
+          render: 'Successfully logged in!',
+          type: 'success',
+          isLoading: false,
+          autoClose: true,
+          closeButton: true
+        };
+
         if (response.status == 200) {
-          toast.update(loadingToast, loadedSuccessConfig);
+          toast.update(loadingToast, loadedConfig);
           cookies.set('whats-the-pay-token', response.data.token);
           cookies.set('whats-the-pay-userData', JSON.stringify(response.data?.data?.user));
           setTimeout(() => {
@@ -59,14 +66,12 @@ const Login = () => {
         clearCookiesForLogout();
         console.log(error);
         toast.update(loadingToast, {
-          render: 'Login failed! Invalid Email / Password',
+          render: 'Error logging in!',
           type: 'error',
           isLoading: false,
-          // autoClose: true,
+          autoClose: true,
           closeButton: true
         });
-        setEmail('');
-        setPassword('');
       }
     }
 
@@ -74,20 +79,21 @@ const Login = () => {
   };
 
   return (
-    <div className="px-4 py-4 md:py-8 md:px-24 ">
-      <ToastContainer position="bottom-center" />
+    <div className="px-4 pb-4 md:pb-8 md:pt-2 md:px-24 ">
+      <ToastContainer position="bottom-center" toastClassName="toastClass" />
       <div className="mx-0 xl:mx-16">
         {/* Upper Banner */}
         <div>
-          <h1 className="text-2xl md:text-3xl font-semibold">Login to your Account</h1>
-          <h1 className="text-sm md:text-lg mt-3">Welcome back! Select the below login methods.</h1>
+          {/* <h1 className="text-2xl font-semibold">Create New Account</h1> */}
+          {/* <h1 className="text-sm md:text-lg mt-3">Welcome back! Select the below login methods.</h1> */}
         </div>
 
         {/* Login Container */}
 
-        <div className="mt-2 md:mt-10 p-6 rounded-xl shadow-[0_0_30px_0_rgba(0,0,0,0.3)] flex w-full justify-evenly ">
+        <div className="p-6 rounded-xl shadow-[0_0_30px_0_rgba(0,0,0,0.3)] flex w-full justify-evenly ">
           {/* Grid 1 */}
-          <div className="hidden lg:block">
+          <div className="hidden lg:flex flex-col justify-evenly items-center ">
+            <h1 className="text-3xl font-semibold">Create New Account</h1>
             <img
               // src={LoginFormIllustrator}
               src={'http://localhost:8000/front-end-images/loginPage/loginFormImage.png'}
@@ -97,7 +103,21 @@ const Login = () => {
           </div>
           {/* Grid 2 */}
           <div className="flex flex-col items-start w-full lg:w-[40%] justify-center ">
-            <label>Email ID </label>
+            <label>Name </label>
+            <input
+              type="text"
+              className="py-2 px-4 rounded-md outline-none w-full h-12 mt-2   "
+              placeholder="Enter email id "
+              style={{
+                border: errors.email ? '1px solid red' : '1px solid #e5e7eb'
+              }}
+              value={name}
+              onChange={(e) => {
+                if (!errors.name) setErrors((prevValue) => ({ ...prevValue, name: false }));
+                setName(e.target.value);
+              }}
+            ></input>
+            <label className="mt-5">Email ID </label>
             <input
               type="text"
               className="py-2 px-4 rounded-md outline-none w-full h-12 mt-2   "
@@ -107,15 +127,10 @@ const Login = () => {
               }}
               value={email}
               onChange={(e) => {
-                if (errors.email) setErrors((prevValue) => ({ ...prevValue, email: false }));
+                if (!errors.email) setErrors((prevValue) => ({ ...prevValue, email: false }));
                 setEmail(e.target.value);
               }}
             ></input>
-            {errors.email && (
-              <p className="text-right w-full text-sm text-red-600">
-                {email ? 'Invalid email address' : 'Required*'}
-              </p>
-            )}
 
             {/* password container */}
             <label className="mt-5">Password</label>
@@ -131,7 +146,7 @@ const Login = () => {
                 className="flex-1 outline-none w-full"
                 value={password}
                 onChange={(e) => {
-                  if (errors.password)
+                  if (!errors.password)
                     setErrors((prevValue) => ({ ...prevValue, password: false }));
                   setPassword(e.target.value);
                 }}
@@ -143,11 +158,31 @@ const Login = () => {
                 Show
               </p>
             </div>
-            {errors.password && (
-              <p className="text-right w-full text-sm text-red-600">
-                {password ? 'Invalid email address' : 'Required*'}
+            <label className="mt-5">Confirm Password</label>
+            <div
+              className="mt-2 py-2 px-4 rounded-md  flex bg-white justify-between w-full h-12"
+              style={{
+                border: errors.confirmPassword ? '1px solid red' : '1px solid #e5e7eb'
+              }}
+            >
+              <input
+                type={showConfirmPass ? 'text' : 'password'}
+                placeholder="Enter password"
+                className="flex-1 outline-none w-full"
+                value={confirmPassword}
+                onChange={(e) => {
+                  if (!errors.confirmPassword)
+                    setErrors((prevValue) => ({ ...prevValue, confirmPassword: false }));
+                  setConfirmPassword(e.target.value);
+                }}
+              ></input>
+              <p
+                className="flex-0 pl-2 cursor-pointer select-none text-blue-500 text-base font-medium "
+                onClick={() => confirmPassword && setShowConfirmPass((prevValue) => !prevValue)}
+              >
+                Show
               </p>
-            )}
+            </div>
 
             <div className=" flex items-center justify-between mt-5 w-full ">
               <div className="flex items-center gap-1 text-sm ">
@@ -180,4 +215,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default SignUp;

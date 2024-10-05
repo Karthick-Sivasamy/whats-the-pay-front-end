@@ -1,9 +1,13 @@
+import { createBrowserRouter, redirect, RouterProvider } from 'react-router-dom';
+import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
+
+// File Imports
 import LandingPage from './pages/landingPage';
 import Login from './pages/login';
 import Layout from './utils/layout';
-
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { getJwtStatus, getLoggedUserInfoStatus } from './utils/globalUtils';
+import SignUp from './pages/signUp';
 
 const router = createBrowserRouter([
   {
@@ -12,16 +16,34 @@ const router = createBrowserRouter([
       <div className="h-[90dvh] w-full grid place-items-center">
         <h1>Page Not Found</h1>
       </div>
-    ),
+    )
   },
   {
     path: '/',
-    element: <LandingPage />,
+    element: <LandingPage />
   },
   {
     path: '/login',
-    element: <Login />,
+    loader: () => {
+      if (getLoggedUserInfoStatus() && getJwtStatus()) {
+        return redirect('/');
+      } else {
+        return true;
+      }
+    },
+    element: <Login />
   },
+  {
+    path: '/signup',
+    loader: () => {
+      if (getLoggedUserInfoStatus() && getJwtStatus()) {
+        return redirect('/');
+      } else {
+        return true;
+      }
+    },
+    element: <SignUp />
+  }
 ]);
 
 function App() {
