@@ -62,7 +62,7 @@ const Login = () => {
           render: 'Login failed! Invalid Email / Password',
           type: 'error',
           isLoading: false,
-          // autoClose: true,
+          autoClose: true,
           closeButton: true
         });
         setEmail('');
@@ -96,8 +96,16 @@ const Login = () => {
             />
           </div>
           {/* Grid 2 */}
+
           <div className="flex flex-col items-start w-full lg:w-[40%] justify-center ">
-            <label>Email ID </label>
+            <div className="flex items-end justify-between w-full">
+              <label className="mt-5">Email Id</label>
+              {errors.email && (
+                <p className="text-right text-sm text-red-600">
+                  {email ? 'Invalid email address' : 'Required*'}
+                </p>
+              )}
+            </div>
             <input
               type="text"
               className="py-2 px-4 rounded-md outline-none w-full h-12 mt-2   "
@@ -111,14 +119,16 @@ const Login = () => {
                 setEmail(e.target.value);
               }}
             ></input>
-            {errors.email && (
-              <p className="text-right w-full text-sm text-red-600">
-                {email ? 'Invalid email address' : 'Required*'}
-              </p>
-            )}
 
             {/* password container */}
-            <label className="mt-5">Password</label>
+            <div className="flex items-end justify-between w-full">
+              <label className="mt-5">Confirm Password</label>
+              {errors.password && (
+                <p className="text-right  text-sm text-red-600">
+                  {password ? 'Invalid Password' : 'Required*'}
+                </p>
+              )}
+            </div>
             <div
               className="mt-2 py-2 px-4 rounded-md  flex bg-white justify-between w-full h-12"
               style={{
@@ -143,11 +153,6 @@ const Login = () => {
                 Show
               </p>
             </div>
-            {errors.password && (
-              <p className="text-right w-full text-sm text-red-600">
-                {password ? 'Invalid email address' : 'Required*'}
-              </p>
-            )}
 
             <div className=" flex items-center justify-between mt-5 w-full ">
               <div className="flex items-center gap-1 text-sm ">

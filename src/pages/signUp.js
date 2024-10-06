@@ -6,6 +6,7 @@ import { ApiService } from '../utils/apiService';
 import validator from 'validator';
 import { ToastContainer, toast } from 'react-toastify';
 import { clearCookiesForLogout } from '../utils/globalUtils';
+import { checkValidName } from '../utils/globalValidator';
 
 const SignUp = () => {
   const cookies = new Cookies();
@@ -13,29 +14,38 @@ const SignUp = () => {
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
 
-  const [name, setName] = useState('karthick');
-  const [email, setEmail] = useState('karthick@yopmail.com');
-  const [password, setPassword] = useState('test1234');
-  const [confirmPassword, setConfirmPassword] = useState('test1234');
+  const [inputData, setInputData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const [errors, setErrors] = useState({
-    name: false,
-    email: false,
-    password: false,
-    confirmPassword: false
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
   });
 
   let loadingToast;
 
+  const validInputDataConfig = {
+    name: (name) => checkValidName(name)
+  };
+
   const loginHandler = async () => {
-    if (!email || !password || !name || !confirmPassword) {
-      setErrors({
-        email: !Boolean(email.length),
-        password: !Boolean(password.length),
-        confirmPassword: !Boolean(confirmPassword.length),
-        name: !Boolean(name.length)
-      });
-      return;
+    console.log('hi');
+    for (const key in inputData) {
+      console.log(key, inputData[key]);
+      if (!inputData[key]) {
+        setErrors((prevValue) => ({ ...prevValue, [key]: 'required*' }));
+      }
     }
 
     if (validator.isEmail(email) && validator.isAlphanumeric(password)) {
@@ -103,21 +113,28 @@ const SignUp = () => {
           </div>
           {/* Grid 2 */}
           <div className="flex flex-col items-start w-full lg:w-[40%] justify-center ">
-            <label>Name </label>
+            <div className="flex items-end justify-between w-full">
+              <label className="mt-5">Name</label>
+              {errors.name && <p className="text-right text-sm text-red-600">{errors.name}</p>}
+            </div>
             <input
               type="text"
               className="py-2 px-4 rounded-md outline-none w-full h-12 mt-2   "
               placeholder="Enter email id "
               style={{
-                border: errors.email ? '1px solid red' : '1px solid #e5e7eb'
+                border: errors.name ? '1px solid red' : '1px solid #e5e7eb'
               }}
-              value={name}
+              value={inputData.name}
               onChange={(e) => {
-                if (!errors.name) setErrors((prevValue) => ({ ...prevValue, name: false }));
-                setName(e.target.value);
+                if (errors.name) setErrors((prevValue) => ({ ...prevValue, name: '' }));
+                // setName(e.target.value);
+                setInputData((prevValue) => ({ ...prevValue, name: e.target.value }));
               }}
             ></input>
-            <label className="mt-5">Email ID </label>
+            <div className="flex items-end justify-between w-full">
+              <label className="mt-5">Email Id</label>
+              {errors.email && <p className="text-right text-sm text-red-600">{errors.email}</p>}
+            </div>
             <input
               type="text"
               className="py-2 px-4 rounded-md outline-none w-full h-12 mt-2   "
@@ -125,15 +142,21 @@ const SignUp = () => {
               style={{
                 border: errors.email ? '1px solid red' : '1px solid #e5e7eb'
               }}
-              value={email}
+              value={inputData.email}
               onChange={(e) => {
-                if (!errors.email) setErrors((prevValue) => ({ ...prevValue, email: false }));
-                setEmail(e.target.value);
+                if (errors.email) setErrors((prevValue) => ({ ...prevValue, email: '' }));
+
+                setInputData((prevValue) => ({ ...prevValue, email: e.target.value }));
               }}
             ></input>
 
             {/* password container */}
-            <label className="mt-5">Password</label>
+            <div className="flex items-end justify-between w-full">
+              <label className="mt-5">Password</label>
+              {errors.password && (
+                <p className="text-right text-sm text-red-600">{errors.password}</p>
+              )}
+            </div>
             <div
               className="mt-2 py-2 px-4 rounded-md  flex bg-white justify-between w-full h-12"
               style={{
@@ -144,21 +167,26 @@ const SignUp = () => {
                 type={showPass ? 'text' : 'password'}
                 placeholder="Enter password"
                 className="flex-1 outline-none w-full"
-                value={password}
+                value={inputData.password}
                 onChange={(e) => {
-                  if (!errors.password)
-                    setErrors((prevValue) => ({ ...prevValue, password: false }));
-                  setPassword(e.target.value);
+                  if (errors.password) setErrors((prevValue) => ({ ...prevValue, password: '' }));
+                  setInputData((prevValue) => ({ ...prevValue, password: e.target.value }));
                 }}
               ></input>
               <p
                 className="flex-0 pl-2 cursor-pointer select-none text-blue-500 text-base font-medium "
-                onClick={() => password && setShowPass((prevValue) => !prevValue)}
+                onClick={() => inputData.password && setShowPass((prevValue) => !prevValue)}
               >
                 Show
               </p>
             </div>
-            <label className="mt-5">Confirm Password</label>
+
+            <div className="flex items-end justify-between w-full">
+              <label className="mt-5">Confirm Password</label>
+              {errors.confirmPassword && (
+                <p className="text-right text-sm text-red-600">{errors.confirmPassword}</p>
+              )}
+            </div>
             <div
               className="mt-2 py-2 px-4 rounded-md  flex bg-white justify-between w-full h-12"
               style={{
@@ -169,16 +197,18 @@ const SignUp = () => {
                 type={showConfirmPass ? 'text' : 'password'}
                 placeholder="Enter password"
                 className="flex-1 outline-none w-full"
-                value={confirmPassword}
+                value={inputData.confirmPassword}
                 onChange={(e) => {
-                  if (!errors.confirmPassword)
-                    setErrors((prevValue) => ({ ...prevValue, confirmPassword: false }));
-                  setConfirmPassword(e.target.value);
+                  if (errors.confirmPassword)
+                    setErrors((prevValue) => ({ ...prevValue, confirmPassword: '' }));
+                  setInputData((prevValue) => ({ ...prevValue, confirmPassword: e.target.value }));
                 }}
               ></input>
               <p
                 className="flex-0 pl-2 cursor-pointer select-none text-blue-500 text-base font-medium "
-                onClick={() => confirmPassword && setShowConfirmPass((prevValue) => !prevValue)}
+                onClick={() =>
+                  inputData.confirmPassword && setShowConfirmPass((prevValue) => !prevValue)
+                }
               >
                 Show
               </p>
@@ -186,7 +216,7 @@ const SignUp = () => {
 
             <div className=" flex items-center justify-between mt-5 w-full ">
               <div className="flex items-center gap-1 text-sm ">
-                <input type="checkbox" className="cursor-pointer"></input>
+                <input type="checkbox" className="cursor-pointer" value={'hi'}></input>
                 <p>Remember me</p>
               </div>
               <a href="#" className="text-blue-400 text-sm underline underline-offset-2 ">
@@ -203,9 +233,9 @@ const SignUp = () => {
             </button>
 
             <div className=" flex items-center justify-center mt-5 text-sm w-full">
-              Don't have an account?
-              <a className="text-blue-500 underline underline-offset-2 pl-1" href="/signup">
-                Create account
+              Already have an account?
+              <a className="text-blue-500 underline underline-offset-2 pl-1" href="/login">
+                Login
               </a>
             </div>
           </div>
