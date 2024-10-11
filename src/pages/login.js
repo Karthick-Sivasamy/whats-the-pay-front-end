@@ -1,5 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { Navigate, redirect, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 
 import Cookies from 'universal-cookie';
 import { ApiService } from '../utils/apiService';
@@ -12,8 +11,12 @@ const Login = () => {
 
   const [showPass, setShowPass] = useState(false);
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [inputData, setInputData] = useState({
+    email: '',
+    password: ''
+  });
+  // const [email, setEmail] = useState('');
+  // const [password, setPassword] = useState('');
 
   const [errors, setErrors] = useState({
     email: false,
@@ -30,25 +33,39 @@ const Login = () => {
     closeButton: true
   };
 
-  const loginHandler = async () => {
-    if (!validator.isEmail(email.trim()) || !validator.isAlphanumeric(password.trim())) {
-      if (!email || !password) {
-        setErrors({ email: !Boolean(email.length), password: !Boolean(password.length) });
-        return;
+  const loginParamsConfig = {
+    email: (email) => validator.isEmail(email),
+    password: (pass) => validator.isStrongPassword(pass)
+  };
+
+  const isValidForm = () => {
+    let isValid = true;
+
+    for (const key in inputData) {
+      if (!inputData[key]) {
+        setErrors((prevValue) => ({ ...prevValue, [key]: `required*` }));
+        isValid = false;
       }
 
-      setErrors({ password: true, email: true });
+      if (inputData[key].length && !loginParamsConfig[key](inputData[key])) {
+        setErrors((prevValue) => ({ ...prevValue, [key]: `Invalid ${key}` }));
+        isValid = false;
+      }
     }
-    if (validator.isEmail(email) && validator.isAlphanumeric(password)) {
+
+    return isValid;
+  };
+
+  const loginHandler = async () => {
+    if (isValidForm()) {
       try {
-        loadingToast = toast.loading('Please Wait');
         const response = await ApiService().post('/user/login', {
-          email: email,
-          password: password
+          email: inputData.email,
+          password: inputData.password
         });
 
-        if (response.status == 200) {
-          toast.update(loadingToast, loadedSuccessConfig);
+        if (response.status === 200) {
+          toast.success('Logged in successfully.');
           cookies.set('whats-the-pay-token', response.data.token);
           cookies.set('whats-the-pay-userData', JSON.stringify(response.data?.data?.user));
           setTimeout(() => {
@@ -58,19 +75,10 @@ const Login = () => {
       } catch (error) {
         clearCookiesForLogout();
         console.log(error);
-        toast.update(loadingToast, {
-          render: 'Login failed! Invalid Email / Password',
-          type: 'error',
-          isLoading: false,
-          autoClose: true,
-          closeButton: true
-        });
-        setEmail('');
-        setPassword('');
+        setInputData({ email: '', password: '' });
+        toast.error('Incorrect Email or Password');
       }
     }
-
-    return;
   };
 
   return (
@@ -100,11 +108,7 @@ const Login = () => {
           <div className="flex flex-col items-start w-full lg:w-[40%] justify-center ">
             <div className="flex items-end justify-between w-full">
               <label className="mt-5">Email Id</label>
-              {errors.email && (
-                <p className="text-right text-sm text-red-600">
-                  {email ? 'Invalid email address' : 'Required*'}
-                </p>
-              )}
+              <p className="text-right text-sm text-red-600">{errors.email}</p>
             </div>
             <input
               type="text"
@@ -113,21 +117,17 @@ const Login = () => {
               style={{
                 border: errors.email ? '1px solid red' : '1px solid #e5e7eb'
               }}
-              value={email}
+              value={inputData.email}
               onChange={(e) => {
                 if (errors.email) setErrors((prevValue) => ({ ...prevValue, email: false }));
-                setEmail(e.target.value);
+                setInputData((prevValue) => ({ ...prevValue, email: e.target.value }));
               }}
             ></input>
 
             {/* password container */}
             <div className="flex items-end justify-between w-full">
-              <label className="mt-5">Confirm Password</label>
-              {errors.password && (
-                <p className="text-right  text-sm text-red-600">
-                  {password ? 'Invalid Password' : 'Required*'}
-                </p>
-              )}
+              <label className="mt-5">Password</label>
+              <p className="text-right  text-sm text-red-600">{errors.password}</p>
             </div>
             <div
               className="mt-2 py-2 px-4 rounded-md  flex bg-white justify-between w-full h-12"
@@ -139,16 +139,16 @@ const Login = () => {
                 type={showPass ? 'text' : 'password'}
                 placeholder="Enter password"
                 className="flex-1 outline-none w-full"
-                value={password}
+                value={inputData.password}
                 onChange={(e) => {
                   if (errors.password)
                     setErrors((prevValue) => ({ ...prevValue, password: false }));
-                  setPassword(e.target.value);
+                  setInputData((prevValue) => ({ ...prevValue, password: e.target.value }));
                 }}
               ></input>
               <p
                 className="flex-0 pl-2 cursor-pointer select-none text-blue-500 text-base font-medium "
-                onClick={() => password && setShowPass((prevValue) => !prevValue)}
+                onClick={() => inputData.password && setShowPass((prevValue) => !prevValue)}
               >
                 Show
               </p>
@@ -159,7 +159,7 @@ const Login = () => {
                 <input type="checkbox" className="cursor-pointer"></input>
                 <p>Remember me</p>
               </div>
-              <a href="#" className="text-blue-400 text-sm underline underline-offset-2 ">
+              <a href="#" className="text-blue-500 text-sm underline underline-offset-2 ">
                 Forgot password?
               </a>
             </div>

@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState } from 'react';
-import Cookies from 'universal-cookie';
-import { GlobalContext } from '../Contexts/GlobalContextProvider';
+import React, { useEffect, useState } from 'react';
+// import Cookies from 'universal-cookie';
+// import { GlobalContext } from '../Contexts/GlobalContextProvider';
 import { getLoggedUserInfoStatus, getJwtStatus, clearCookiesForLogout } from './globalUtils';
 
 // Local Imports
