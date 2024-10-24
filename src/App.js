@@ -6,7 +6,7 @@ import './App.css';
 import LandingPage from './pages/landingPage';
 import Login from './pages/login';
 import Layout from './utils/layout';
-import { getJwtStatus, getLoggedUserInfoStatus } from './utils/globalUtils';
+import { getJwtStatus, getUserInfo } from './utils/globalUtils';
 import SignUp from './pages/signUp';
 
 const router = createBrowserRouter([
@@ -25,7 +25,7 @@ const router = createBrowserRouter([
   {
     path: '/login',
     loader: () => {
-      if (getLoggedUserInfoStatus() && getJwtStatus()) {
+      if (getUserInfo() && getJwtStatus()) {
         return redirect('/');
       } else {
         return true;
@@ -36,7 +36,7 @@ const router = createBrowserRouter([
   {
     path: '/signup',
     loader: () => {
-      if (getLoggedUserInfoStatus() && getJwtStatus()) {
+      if (getUserInfo() && getJwtStatus()) {
         return redirect('/');
       } else {
         return true;

@@ -4,13 +4,14 @@ import Cookies from 'universal-cookie';
 import { ApiService } from '../utils/apiService';
 import validator from 'validator';
 import { toast } from 'react-toastify';
-import { clearCookiesForLogout } from '../utils/globalUtils';
+import { clearUserInfo } from '../utils/globalUtils';
 
 const SignUp = () => {
   const cookies = new Cookies();
 
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
+  const [rememberMeBool, setRememberMeBool] = useState(true);
 
   const [inputData, setInputData] = useState({
     name: '',
@@ -60,7 +61,7 @@ const SignUp = () => {
   const loginHandler = async () => {
     if (checkIsFormValid()) {
       try {
-        const response = await ApiService().post('/user/send-verification-mail', {
+        const response = await ApiService().post('/user/send-signup-verification-mail', {
           recipientMail: inputData.email,
           recipientName: inputData.name
         });
@@ -71,9 +72,8 @@ const SignUp = () => {
           toast.success('Verfication code is sent to your email.', { position: 'bottom-center' });
         }
       } catch (error) {
-        clearCookiesForLogout();
+        clearUserInfo();
         toast.error('Signing up failed!', { position: 'bottom-center' });
-        console.log(error);
       }
     }
   };
@@ -104,7 +104,7 @@ const SignUp = () => {
         toast.success('User created successfully!');
         setTimeout(() => {
           window.location.reload();
-        }, 5000);
+        }, 1000);
       }
     } catch (error) {
       setVerificationError('Incorrect verification code');
@@ -275,8 +275,17 @@ const SignUp = () => {
               </div>
 
               <div className=" flex items-center justify-between mt-5 w-full ">
-                <div className="flex items-center gap-1 text-sm ">
-                  <input type="checkbox" className="cursor-pointer" checked></input>
+                <div
+                  className="flex items-center gap-1 text-sm cursor-pointer select-none"
+                  onClick={() => {
+                    setRememberMeBool((prevValue) => !prevValue);
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    className="cursor-pointer"
+                    checked={rememberMeBool}
+                  ></input>
                   <p>Remember me</p>
                 </div>
                 <a href="#" className="text-blue-500 text-sm underline underline-offset-2 ">
@@ -289,7 +298,7 @@ const SignUp = () => {
                 className="mt-4 bg-blue-500 text-white w-full py-2 rounded-md "
                 onClick={() => loginHandler()}
               >
-                Login
+                Sign Up
               </button>
 
               <div className=" flex items-center justify-center mt-5 text-sm w-full">

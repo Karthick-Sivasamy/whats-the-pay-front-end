@@ -1,19 +1,24 @@
-import React, { useState } from 'react';
-
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Cookies from 'universal-cookie';
-import { ApiService } from '../utils/apiService';
-import validator from 'validator';
-import { ToastContainer, toast } from 'react-toastify';
-import { clearCookiesForLogout } from '../utils/globalUtils';
+import { toast } from 'react-toastify';
+import { connect } from 'react-redux';
 
-const Login = () => {
+import { loginAction } from '../store/Authorization/authActions.js';
+import validator from 'validator';
+import { clearUserInfo } from '../utils/globalUtils';
+
+const Login = ({ loginData, postLogin }) => {
+  const navigate = useNavigate();
+
   const cookies = new Cookies();
 
   const [showPass, setShowPass] = useState(false);
+  const [rememberMeBool, setRememberMeBool] = useState(true);
 
   const [inputData, setInputData] = useState({
-    email: '',
-    password: ''
+    email: 'karthick07@yopmail.com',
+    password: 'Test@1234'
   });
   // const [email, setEmail] = useState('');
   // const [password, setPassword] = useState('');
@@ -23,15 +28,18 @@ const Login = () => {
     password: false
   });
 
-  let loadingToast;
+  useEffect(() => {
+    if (!loginData.isError && loginData.response?.status == 'success') {
+      toast.success('Logged in successfully.');
+      navigate('/', { replace: true });
+    }
 
-  const loadedSuccessConfig = {
-    render: 'Successfully logged in!',
-    type: 'success',
-    isLoading: false,
-    autoClose: true,
-    closeButton: true
-  };
+    if (loginData.isError) {
+      clearUserInfo();
+      setInputData({ email: '', password: '' });
+      toast.error('Incorrect Email or Password');
+    }
+  }, [loginData]);
 
   const loginParamsConfig = {
     email: (email) => validator.isEmail(email),
@@ -58,32 +66,15 @@ const Login = () => {
 
   const loginHandler = async () => {
     if (isValidForm()) {
-      try {
-        const response = await ApiService().post('/user/login', {
-          email: inputData.email,
-          password: inputData.password
-        });
-
-        if (response.status === 200) {
-          toast.success('Logged in successfully.');
-          cookies.set('whats-the-pay-token', response.data.token);
-          cookies.set('whats-the-pay-userData', JSON.stringify(response.data?.data?.user));
-          setTimeout(() => {
-            window.location.reload();
-          }, 5000);
-        }
-      } catch (error) {
-        clearCookiesForLogout();
-        console.log(error);
-        setInputData({ email: '', password: '' });
-        toast.error('Incorrect Email or Password');
-      }
+      postLogin({
+        email: inputData.email,
+        password: inputData.password
+      });
     }
   };
 
   return (
     <div className="px-4 py-4 md:py-8 md:px-24 ">
-      <ToastContainer position="bottom-center" />
       <div className="mx-0 xl:mx-16">
         {/* Upper Banner */}
         <div>
@@ -155,8 +146,20 @@ const Login = () => {
             </div>
 
             <div className=" flex items-center justify-between mt-5 w-full ">
-              <div className="flex items-center gap-1 text-sm ">
-                <input type="checkbox" className="cursor-pointer"></input>
+              <div
+                className="flex items-center gap-1 text-sm cursor-pointer select-none "
+                onClick={() => {
+                  setRememberMeBool((prevValue) => !prevValue);
+                }}
+              >
+                <input
+                  type="checkbox"
+                  className="cursor-pointer"
+                  checked={rememberMeBool}
+                  onChange={() => {
+                    setRememberMeBool((prevValue) => !prevValue);
+                  }}
+                ></input>
                 <p>Remember me</p>
               </div>
               <a href="#" className="text-blue-500 text-sm underline underline-offset-2 ">
@@ -185,4 +188,12 @@ const Login = () => {
   );
 };
 
-export default Login;
+const mapStateToProps = (state) => ({
+  loginData: state.loginData
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  postLogin: (params) => dispatch(loginAction(params))
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Login);

@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-// import Cookies from 'universal-cookie';
-// import { GlobalContext } from '../Contexts/GlobalContextProvider';
-import { getLoggedUserInfoStatus, getJwtStatus, clearCookiesForLogout } from './globalUtils';
+import { getUserInfo, getJwtStatus, clearUserInfo } from './globalUtils';
+import { connect } from 'react-redux';
 
 // Local Imports
 
-const Header = () => {
+const Header = ({ loginData }) => {
   const HeaderLinks = [
     {
       name: 'Home',
@@ -38,15 +37,14 @@ const Header = () => {
 
   const [userData, setUserData] = useState(null);
 
-  console.log(userData);
-
   useEffect(() => {
-    if (getJwtStatus() && getLoggedUserInfoStatus()) {
-      setUserData(getLoggedUserInfoStatus(true));
+    if (getJwtStatus() && getUserInfo()) {
+      setUserData(getUserInfo(true));
     } else {
       setUserData(null);
+      clearUserInfo();
     }
-  }, []);
+  }, [loginData]);
 
   return (
     <>
@@ -62,7 +60,7 @@ const Header = () => {
             <button
               className="py-2 px-4 bg-blue-500 text-white rounded-md"
               onClick={() => {
-                clearCookiesForLogout();
+                clearUserInfo();
                 window.location.reload();
               }}
             >
@@ -97,7 +95,7 @@ const Header = () => {
       <nav className="py-4 px-4 lg:px-8 xl:px-36 flex items-center justify-between">
         <div className="flex  items-center gap-4">
           <img
-            src="https://wallpapercave.com/fuwp/uwp4224146.jpeg"
+            src="https://img.freepik.com/premium-vector/smiling-people-with-letter-job-monogram-logo-design_690981-2235.jpg?w=900"
             alt="logo"
             className="w-10 h-10 object-cover rounded-full"
           />
@@ -128,7 +126,7 @@ const Header = () => {
             <button
               className="py-2 px-4 bg-blue-500 text-white rounded-md"
               onClick={() => {
-                clearCookiesForLogout();
+                clearUserInfo();
                 window.location.reload();
               }}
             >
@@ -145,7 +143,7 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-6 lg:hidden">
-          {/* {new Cookies().get('token') && getLoggedUserInfoStatus() && (
+          {/* {new Cookies().get('token') && getUserInfo() && (
             <i className="fa-solid fa-user-circle text-3xl text-blue-500 cursor-pointer lg:hidden" />
           )} */}
           {userData && (
@@ -159,7 +157,6 @@ const Header = () => {
           <i
             className=" fa-solid fa-bars text-2xl cursor-pointer hover:opacity-75"
             onClick={() => {
-              console.log('Im Logging');
               setShowSideBar(true);
             }}
           ></i>
@@ -169,4 +166,10 @@ const Header = () => {
   );
 };
 
-export default Header;
+const mapStateToProps = (state) => ({
+  loginData: state.loginData
+});
+
+const mapDispatchToProps = (dispatch) => ({});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Header);
